@@ -11,8 +11,10 @@ class CreateUserMessageTable extends Migration
         Schema::create('user_message', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id')->unsigned()->comment('id пользователя');
-            $table->text('message_text')->comment('Текст сообщения');
-            $table->dateTime('created_at')->comment('Дата создания сообщения');
+            $table->text('text')->comment('Текст сообщения');
+            $table->integer('private')->unsigned()->comment('Закодированно ли сообщение');
+            $table->integer('deleted')->unsigned()->comment('Удалено ли сообщение');
+            $table->timestamps();
         });
     }
 

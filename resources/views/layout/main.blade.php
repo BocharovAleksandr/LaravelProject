@@ -3,7 +3,7 @@
 <head>
     <title>Сайтсофт</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ mix('css/app.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css">
     @yield('styles')
 </head>
 <body>
@@ -25,9 +25,10 @@
 </div>
 
     @yield('content')
-    @yield('scripts')
-
+    @yield('modal')
     <script src="{{ mix('js/app.js') }}"></script>
+    <script src="https://stackpath.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+    @yield('scripts')
 
 </body>
 </html>
