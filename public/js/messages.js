@@ -17738,60 +17738,96 @@ __webpack_require__.r(__webpack_exports__);
 
 $(function () {
   var Vm_main = new Vue({
+    // Объект Vue для основного контента страницы
     el: '#js-main-block',
     data: {
       messages_list: [],
+      // Список всех сообщений
       get_data_url: $('#js-get-data-url').val(),
-      is_data_error: 0
+      // url для получения списка сообщений
+      is_data_error: 0,
+      // Произошла ли ошибка
+      notify_text: '' // Текст уведомления
+
     },
     mounted: function mounted() {
       this.getData();
     },
     methods: {
       getData: function getData() {
+        // Получить список всех сообщений
         var self = this;
         self.messages_list = [];
         axios.get(this.get_data_url).then(function (response) {
           self.messages_list = response.data.content;
           console.log(self.messages_list);
         })["catch"](function () {
-          self.messages_list = [];
           self.is_data_error = 1;
         });
       },
       clickAddMessageButton: function clickAddMessageButton() {
+        // Нажатие на кнопку "Добавить"
         Vm_modal.showSaveMessageModal(null, '', 0);
       },
       clickEditMessageButton: function clickEditMessageButton(message_id) {
+        // Нажатие на кнопку "Редактировать"
         var $message_block = $('#message_block_' + message_id);
         var message_text = $message_block.data('text');
         var is_message_private = $message_block.data('private');
         Vm_modal.showSaveMessageModal(message_id, message_text, is_message_private);
       },
       clickDeleteMessageButton: function clickDeleteMessageButton(message_id) {
+        // Нажатие на кнопку "Удалить"
         Vm_modal.showDeleteMessageModal(message_id);
       },
       decodeString: function decodeString(string) {
+        // Раскодировать "приватное" сообщение
         return decodeURIComponent(escape(window.atob(string)));
+      },
+      transformDate: function transformDate(date) {
+        // Преобразовать дату в формат без секунд
+        return moment__WEBPACK_IMPORTED_MODULE_0___default()(date, 'YYYY-DD-MM HH:mm:ss').format('YYYY-DD-MM H:mm');
+      },
+      showNotify: function showNotify(notify_text, is_error) {
+        // Показать уведомление о сохранении/изменении/удалении сообщения
+        var self = this;
+        self.notify_text = notify_text;
+
+        if (!is_error) {
+          $('#js-notify-block').removeClass('hidden').addClass('alert-success');
+        } else {
+          $('#js-notify-block').removeClass('hidden').addClass('alert-error');
+        }
+
+        setTimeout(function () {
+          $('#js-notify-block').removeClass('alert-success alert-error').addClass('hidden');
+        }, 3000);
       }
     }
   });
   var Vm_modal = new Vue({
+    // Объект Vue для модалок
     el: '#js-modals-block',
     data: {
       send_message_modal_head_title: '',
+      // Текст заголовка в модалке ("Создание"/"Редактирование")
       save_message_url: $('#js-save-message-url').val(),
+      // url для отправки сообщения (нового/отредактированного)
       delete_message_url: $('#js-delete-message-url').val(),
-      token: $('#js-token').val()
+      // url для удаления сообщения
+      token: $('#js-token').val() // Значение токена
+
     },
     mounted: function mounted() {
       $('#saveMessageModal').on('hidden', function () {
+        // Очистка модалки сообщения от прежних значений при ее закрытии
         $('#js-send-message-modal-message-id').val('');
         $('#js-send-message-modal-is-private').prop('checked', false);
         $('#js-send-message-modal-textarea').val('');
       });
     },
     methods: {
+      // Открыть модалку для создания/редактирования сообщения
       showSaveMessageModal: function showSaveMessageModal(message_id, message_text, is_message_private) {
         var self = this;
         self.send_message_modal_head_title = message_id ? 'Редактирование сообщения' : 'Добавление сообщения';
@@ -17802,10 +17838,12 @@ $(function () {
         $('#saveMessageModal').modal('show');
       },
       showDeleteMessageModal: function showDeleteMessageModal(message_id) {
+        // Открыть модалку для удаления сообщения
         $('#js-delete-message-modal-message-id').val(message_id);
         $('#deleteMessageModal').modal('show');
       },
       saveMessage: function saveMessage() {
+        // Отправить запрос с новым/отредактированным сообщением
         var self = this;
         var message_id = $('#js-send-message-modal-message-id').val();
         var is_message_private = $("#js-send-message-modal-is-private").is(':checked') ? 1 : 0;
@@ -17826,9 +17864,15 @@ $(function () {
           axios.get(self.save_message_url, {
             params: params_list
           }).then(function (response) {
-            console.log(response);
-            Vm_main.getData();
-          })["catch"](function () {}).then(function () {
+            if (response.data.status === 'ok') {
+              Vm_main.getData();
+              Vm_main.showNotify(message_id ? 'Сообщение успешно изменено!' : 'Сообщение успешно создано!', 0);
+            } else {
+              Vm_main.showNotify('Произошла ошибка, попробуйте повторить попытку!', 1);
+            }
+          })["catch"](function () {
+            Vm_main.showNotify('Произошла ошибка, попробуйте повторить попытку!', 1);
+          }).then(function () {
             $('#saveMessageModal').modal('hide');
           });
         } else {
@@ -17837,6 +17881,7 @@ $(function () {
         }
       },
       deleteMessage: function deleteMessage() {
+        // Отправить запрос на удаление сообщения
         var self = this;
         var message_id = $('#js-delete-message-modal-message-id').val();
         axios.get(self.delete_message_url, {
@@ -17847,8 +17892,13 @@ $(function () {
         }).then(function (response) {
           if (response.data.status === 'ok') {
             Vm_main.getData();
+            Vm_main.showNotify('Сообщение успешно удалено!', 0);
+          } else {
+            Vm_main.showNotify('Произошла ошибка, попробуйте повторить попытку!', 1);
           }
-        })["catch"](function () {}).then(function () {
+        })["catch"](function () {
+          Vm_main.showNotify('Произошла ошибка, попробуйте повторить попытку!', 1);
+        }).then(function () {
           $('#deleteMessageModal').modal('hide');
         });
       }

@@ -13,8 +13,8 @@ class CreateUserMessageTable extends Migration
             $table->integer('user_id')->unsigned()->comment('id пользователя');
             $table->text('text')->comment('Текст сообщения');
             $table->integer('private')->unsigned()->comment('Закодированно ли сообщение');
-            $table->integer('deleted')->unsigned()->comment('Удалено ли сообщение');
             $table->timestamps();
+            $table->integer('deleted')->unsigned()->comment('Удалено ли сообщение');
         });
     }
 

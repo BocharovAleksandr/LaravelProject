@@ -1,11 +1,22 @@
-@extends('layout.main')
+@extends('layouts.main')
+
+@section('content_head')
+    <ul class="nav">
+        <li class="active"><a href="#">Главная</a></li>
+    </ul>
+@endsection
 
 @section('content')
 <div class="row-fluid" id="js-main-block" v-cloak>
 
     <div class="span2"></div>
     <div class="span8">
+
         <input type="hidden" id="js-get-data-url" value="{{ route('home.get_data') }}">
+
+        <div id="js-notify-block" class="hidden alert" style="text-align:center;">
+            <b>@{{ notify_text }}</b>
+        </div>
 
         <div class="head-info-block">
             <div style="width:50%; float:left;">
@@ -24,13 +35,13 @@
                  :data-private="message.private">
                 <div style="font-weight:bold;">
                     <div style="width:50%; float:left;">@{{ message.user.name }}:</div>
-                    <div style="text-align:right; width:50%; float:left;">@{{ message.created_at }}</div>
+                    <div style="text-align:right; width:50%; float:left;">@{{ transformDate(message.created_at) }}</div>
                 </div>
                 <div style="clear:both;"></div>
                 <div style="margin-top:20px;">
                     @{{ message.private ? decodeString(message.text) : message.text }}
                 </div>
-                <div style="text-align:right;">
+                <div v-if="message.selfMessage" style="text-align:right;">
                     <button class="btn btn-primary" @click="clickEditMessageButton(message.id)" title="Редактировать сообщение">Редактировать</button>
                     <button class="btn btn-danger" @click="clickDeleteMessageButton(message.id)" title="Удалить сообщение">Удалить</button>
                 </div>
@@ -38,11 +49,11 @@
 
         </div>
 
-        <div v-else-if="!is_data_error && !messages_list.length" class="alert alert-info">
+        <div v-else-if="!is_data_error && !messages_list.length" class="alert alert-info" style="text-align:center;">
             Сообщения отсутствуют
         </div>
 
-        <div v-if="is_data_error" class="alert alert-error">
+        <div v-if="is_data_error" class="alert alert-error" style="text-align:center;">
             Не удалось получить данные! Попобуйте перезагрузить страницу.
         </div>
 
@@ -104,7 +115,7 @@
 
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                        <h3>Удалить сообщение</h3>
+                        <h3 style="text-align:center;">Удалить сообщение?</h3>
                     </div>
 
                     <input type="hidden" id="js-delete-message-modal-message-id" name="message_id" value="">
